@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/soniabhijeet94/Word_Dictionary/issues"
   },
+  "bin": {
+    "dict": "./index.js"
+  },
   "homepage": "https://github.com/soniabhijeet94/Word_Dictionary#readme"
 }
