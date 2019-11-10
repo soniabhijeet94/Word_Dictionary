@@ -1,0 +1,23 @@
+{
+  "name": "word_dictionary",
+  "version": "1.0.0",
+  "description": "A dictionary which will allow to get random_word, synonym/antonym to a specific word and much more.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soniabhijeet94/Word_Dictionary.git"
+  },
+  "keywords": [
+    "word",
+    "dictionary"
+  ],
+  "author": "asoni94",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/soniabhijeet94/Word_Dictionary/issues"
+  },
+  "homepage": "https://github.com/soniabhijeet94/Word_Dictionary#readme"
+}
