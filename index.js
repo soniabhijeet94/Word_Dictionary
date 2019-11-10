@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var axios = require('axios');
+var chalk = require('chalk');
 
 const args = process.argv.slice(2);
 const api_host = 'https://fourtytwowords.herokuapp.com';
@@ -10,11 +11,13 @@ const api_key = 'b972c7ca44dda72a5b482052b1f5e13470e01477f3fb97c85d5313b3c112627
 
 var fortyTwoWordsApi = (url, callback) => {
 	//setup the calling to DB to fetch required results
-	console.log("url: " + url);
+	// console.log("url: " + url);
 	// send a GET request
 	axios.get(url)
 		.then(response => {
-			console.log(response.data);
+			// console.log(response.data);
+			let defn = response.data;
+			callback(defn);
 		}
 	);
 };
@@ -43,10 +46,14 @@ var definitionsAll = (word, callback) => {
 };
 
 var showDefinition = (word) => {
-	definitionsAll(word, (data) => {
-		if(data.length >= 1){
-		  console.log(`The definitions for the word ${word} are : `);
-		  console.log(data)
+	definitionsAll(word, (res) => {
+		if(res.length >= 1){
+			let i = 1;
+		  	console.log(chalk.yellow(`\nThe definitions for the word ${word} are : \n`));
+			//setting some user-readable format now
+			for(let defn of res) {
+				console.log(chalk.cyan(`${i++}. ${defn.text}`));		  
+			}
 		}
 	});
 }
@@ -69,4 +76,4 @@ var initDictionary = () => {
 
 initDictionary();
 
-console.log('Type "dict help" for help.');
+// console.log('Type "dict help" for help.');
