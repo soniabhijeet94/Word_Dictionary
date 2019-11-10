@@ -30,7 +30,7 @@ var fortyTwoWordsApi = (url, callback) => {
 	.then(response => {
 		// console.log(response.data);
 		let res = response.data;
-		console.log(res);
+		// console.log(res);
 		callback(res);
 	}).catch(err => {
 		//got error
@@ -50,7 +50,7 @@ var definitionsAll = (word, callback) => {
   });
 };
 
-var synonymsAll = (word, callback) => {
+var syn_ant_All = (word, callback) => {
   let url = '';
 
   //{apihost}/word/{word}/relatedWords?api_key={api_key} => Word Synonyms
@@ -75,7 +75,7 @@ var showDefinitions = (word) => {
 }
 
 var showSynonyms = (word) => {
-	synonymsAll(word, (res) => {
+	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 1;
 		  	console.log(chalk.yellow(`\nThe synonyms for the word ${word} are : \n`));
@@ -85,6 +85,29 @@ var showSynonyms = (word) => {
 					console.log(chalk.cyan(`${i++}. ${word}`));
 				}		  
 			}
+		}
+	});
+}
+
+var showAntonyms = (word) => {
+	//using same synonymsAll method, as endpoints are same
+	syn_ant_All(word, (res) => {
+		if(res.length >= 1){
+			let i = 1;
+		  	console.log(chalk.yellow(`\nThe antonyms for the word ${word} are : \n`));
+			//setting some user-readable format now
+			let res_length = res.length;
+			let bad_count = 0;
+			for(let ant of res) {
+				if(ant.relationshipType === "antonym") {
+					for(let word of ant.words) {
+						console.log(chalk.cyan(`${i++}. ${word}`));
+					}		  
+				} else bad_count++;
+			}
+
+			if(res_length === bad_count)
+				console.log(chalk.cyan("Sorry, API doesn't have any antonym for the given word."));
 		}
 	});
 }
@@ -100,6 +123,8 @@ var initDictionary = () => {
 			case "defn" : showDefinitions(word); 
 						  break;
 			case "syn" : showSynonyms(word); 
+						  break;
+			case "ant" : showAntonyms(word); 
 						  break;
 		}
  	}
