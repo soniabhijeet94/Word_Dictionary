@@ -27,21 +27,22 @@ var fortyTwoWordsApi = (url, callback) => {
 	// console.log("url: " + url);
 	// send a GET request
 	axios.get(url)
-		.then(response => {
-			// console.log(response.data);
-			let defn = response.data;
-			callback(defn);
-		}).catch(err => {
-			//got error
-			console.log(chalk.red("Definition not found for the requested word : " + err));
-		});
+	.then(response => {
+		// console.log(response.data);
+		let res = response.data;
+		console.log(res);
+		callback(res);
+	}).catch(err => {
+		//got error
+		console.log(chalk.red("Got error: " + err + ". Please try again."));
+	});
 };
 
 
 var definitionsAll = (word, callback) => {
   let url = '';
 
-  //{apihost}/word/{word}/definitions?api_key={api_key} =? for Word Definition
+  //{apihost}/word/{word}/definitions?api_key={api_key} =? for Word Definitions
   let route = `${word}/definitions?api_key=${api_key}`;
   url = word_api + route;
   fortyTwoWordsApi(url, (data) => {
@@ -49,7 +50,18 @@ var definitionsAll = (word, callback) => {
   });
 };
 
-var showDefinition = (word) => {
+var synonymsAll = (word, callback) => {
+  let url = '';
+
+  //{apihost}/word/{word}/relatedWords?api_key={api_key} => Word Synonyms
+  let route = `${word}/relatedWords?api_key=${api_key}`;
+  url = word_api + route;
+  fortyTwoWordsApi(url, (data) => {
+    callback(data);
+  });
+};
+
+var showDefinitions = (word) => {
 	definitionsAll(word, (res) => {
 		if(res.length >= 1){
 			let i = 1;
@@ -62,15 +74,34 @@ var showDefinition = (word) => {
 	});
 }
 
+var showSynonyms = (word) => {
+	synonymsAll(word, (res) => {
+		if(res.length >= 1){
+			let i = 1;
+		  	console.log(chalk.yellow(`\nThe synonyms for the word ${word} are : \n`));
+			//setting some user-readable format now
+			for(let syn of res) {
+				for(let word of syn.words) {
+					console.log(chalk.cyan(`${i++}. ${word}`));
+				}		  
+			}
+		}
+	});
+}
+
 var initDictionary = () => {
 
 	// console.log(process.argv);
 
 	//For no args, call wordOfTheDay api
-	if(args.length === 2 && args[0] === "defn"){
-
+	if(args.length === 2){
 		let word = args[1];
-	    showDefinition(word);
+		switch(args[0]) {
+			case "defn" : showDefinitions(word); 
+						  break;
+			case "syn" : showSynonyms(word); 
+						  break;
+		}
  	}
 
 	// if(args[2].toLowerCase() === "help")
