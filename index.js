@@ -1,13 +1,22 @@
 #!/usr/bin/env node
 
+var axios = require('axios');
+
 const args = process.argv.slice(2);
 const api_host = 'https://fourtytwowords.herokuapp.com';
-const word_api = api_host + 'word/';
-const words_api = api_host + 'words/';
+const word_api = api_host + '/word/';
+const words_api = api_host + '/words/';
 const api_key = 'b972c7ca44dda72a5b482052b1f5e13470e01477f3fb97c85d5313b3c112627073481104fec2fb1a0cc9d84c2212474c0cbe7d8e59d7b95c7cb32a1133f778abd1857bf934ba06647fda4f59e878d164';
 
 var fortyTwoWordsApi = (url, callback) => {
 	//setup the calling to DB to fetch required results
+	console.log("url: " + url);
+	// send a GET request
+	axios.get(url)
+		.then(response => {
+			console.log(response.data);
+		}
+	);
 };
 
 var helpCommands = () => {
@@ -41,7 +50,6 @@ var showDefinition = (word) => {
 		}
 	});
 }
-
 
 var initDictionary = () => {
 
