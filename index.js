@@ -12,7 +12,7 @@ const api_key = 'b972c7ca44dda72a5b482052b1f5e13470e01477f3fb97c85d5313b3c112627
 var showHelpMenu = () => {
   console.log('Available Commands:');
   console.log('\t1. word-definitions : dict defn <word>');
-  console.log('\t2. word-synonyms    : dict syn <word>');
+  console.log('\t2. word-synonyms    : dict syn <word>');		
   console.log('\t3. word-antonyms    : dict ant <word>');
   console.log('\t4. word-examples    : dict ex <word>');
   console.log('\t5. word-full-dict   : dict <word>');
@@ -30,7 +30,7 @@ var fortyTwoWordsApi = (url, callback) => {
 	.then(response => {
 		// console.log(response.data);
 		let res = response.data;
-		// console.log(res.examples);
+		// console.log(res);
 		callback(res);
 	}).catch(err => {
 		//got error
@@ -76,7 +76,7 @@ var showDefinitions = (word) => {
 	definitionsAll(word, (res) => {
 		if(res.length >= 1){
 			let i = 1;
-		  	console.log(chalk.yellow(`\nThe definitions for the word '${word}' are : \n`));
+		  	console.log(chalk.yellow(`\nDefinitions of'${word}' : \n`));
 			//setting some user-readable format now
 			for(let defn of res) {
 				console.log(chalk.cyan(`${i++}. ${defn.text}`));		  
@@ -89,11 +89,11 @@ var showSynonyms = (word) => {
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
-		  	console.log(chalk.yellow(`\nThe synonyms for the word '${word}' are : \n`));
+		  	console.log(chalk.yellow(`\nSynonyms of '${word}' : \n`));
 			//setting some user-readable format now
 			for(let syn of res) {
 				if(syn.relationshipType === "synonym") {
-					for(let word of syn.words) {
+					for(let word of syn.words) {						
 						console.log(chalk.cyan(`${++i}. ${word}`));
 					}		  
 				}	  
@@ -110,7 +110,7 @@ var showAntonyms = (word) => {
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
-		  	console.log(chalk.yellow(`\nThe antonyms for the word '${word}' are : \n`));
+		  	console.log(chalk.yellow(`\nAntonyms of '${word}' : \n`));
 			//setting some user-readable format now
 			for(let ant of res) {
 				if(ant.relationshipType === "antonym") {
@@ -130,7 +130,7 @@ var showExamples = (word) => {
 	examplesAll(word, (res) => {
 		if(res.examples.length >= 1){
 			let i = 0;
-		  	console.log(chalk.yellow(`\nThe examples for the word '${word}' are : \n`));
+		  	console.log(chalk.yellow(`\nExamples of '${word}' : \n`));
 			//setting some user-readable format now
 			for(let example of res.examples) {
 				console.log(chalk.cyan(`${++i}. ${example.text}`));
@@ -149,14 +149,25 @@ var showFullDictionary = (word, callback) => {
   
 };
 
+var showWordOfTheDay = (callback) => {
+	let url = '';
+
+  	//{apihost}/words/randomWord?api_key={api_key} =? for Random Word
+  	let route = `randomWord?api_key=${api_key}`;
+  	url = words_api + route;
+  	fortyTwoWordsApi(url, (data) => {
+   		callback(data);
+  	});
+}
+
 var initDictionary = () => {
 
 	// console.log(process.argv);
 	
 	if(args.length == 0){
 	    showWordOfTheDay((data) => {
-	      console.log('\x1b[93m Word of the Day - Dictionary: \x1b[0m');
-	      dictionary(data.word);
+	      console.log(chalk.bold.yellow(`Word of the Day : ${data.word}`));
+	      showFullDictionary(data.word);
 	    });
     } 	else if(args.length === 1) {
 			//for help & game scenarios
@@ -166,7 +177,7 @@ var initDictionary = () => {
 							 break;
 				case 'help': showHelpMenu();
 							 break;
-				default    : console.log(chalk.blue(`\nThe full-dictionary for the word '${word}' is : \n`));
+				default    : console.log(chalk.bold.yellow(`\nFull Dictionary of '${word}' : \n`));
 							 showFullDictionary(word);
 			}
 	} 	else if(args.length === 2){
