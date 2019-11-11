@@ -78,15 +78,19 @@ var showDefinitions = (word, flag, callback) => {
 		if(res.length >= 1){
 			let i = 1;
 			let defns = [];
-		  	console.log(chalk.yellow(`\nDefinitions of'${word}' : \n`));
-			//setting some user-readable format now
-			for(let def of res) {
-				console.log(chalk.cyan(`${i++}. ${def.text}`));	
-				defns.push(def);	  
+
+			if(flag) {
+				for(let def of res) defns.push(def);
+				if(flag) callback(defns);
+			} else {
+			  	console.log(chalk.yellow(`\nDefinitions of'${word}' : \n`));
+				//setting some user-readable format now
+				for(let def of res) {
+					console.log(chalk.cyan(`${i++}. ${def.text}`));	
+					defns.push(def);	  
+				}
 			}
 		}
-
-		if(flag) callback(defns);
 	});
 }
 
@@ -95,18 +99,21 @@ var showSynonyms = (word, flag, callback) => {
 		if(res.length >= 1){
 			let i = 0;
 			let synms = [];
-		  	console.log(chalk.yellow(`\nSynonyms of '${word}' : \n`));
+			if(!flag)
+		  		console.log(chalk.yellow(`\nSynonyms of '${word}' : \n`));
 			//setting some user-readable format now
 			for(let syn of res) {
 				if(syn.relationshipType === "synonym") {
-					for(let word of syn.words) {						
-						console.log(chalk.cyan(`${++i}. ${word}`));
+					for(let word of syn.words) {	
+						++i;
+						if(!flag)					
+							console.log(chalk.cyan(`${i}. ${word}`));
 						synms.push(word);
 					}		  
 				}	  
 			}
 
-			if(!i)
+			if(!i && !flag)
 				console.log(chalk.cyan("Sorry, API doesn't have any synonym for the given word."));
 
 			if(flag) callback(synms);
@@ -119,25 +126,27 @@ var showAntonyms = (word, flag, callback) => {
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
-			let antms = []
-		  	console.log(chalk.yellow(`\nAntonyms of '${word}' : \n`));
+			let antms = [];
+			if(!flag)	
+		  		console.log(chalk.yellow(`\nAntonyms of '${word}' : \n`));
 			//setting some user-readable format now
 			for(let ant of res) {
 				if(ant.relationshipType === "antonym") {
 					for(let word of ant.words) {
-						console.log(chalk.cyan(`${++i}. ${word}`));
+						++i;
+						if(!flag)
+							console.log(chalk.cyan(`${i}. ${word}`));
 						antms.push(word);
 					}		  
 				}
 			}
 
-			if(!i)
+			if(!i && !flag)
 				console.log(chalk.cyan("Sorry, API doesn't have any antonym for the given word."));
 
 			if(flag) {
 				if(!i) callback(i);
-				callback(antms);
-			}
+			} else callback(antms);
 		}
 	});
 }
@@ -158,9 +167,9 @@ var showExamples = (word) => {
 var showFullDictionary = (word, callback) => {
   //calling all APIs: defn, syn, ant & ex
 
-  showDefinitions(word);
-  showSynonyms(word);
-  showAntonyms(word);
+  showDefinitions(word, 0, ()=>{});
+  showSynonyms(word, 0, ()=>{});
+  showAntonyms(word, 0, ()=>{});
   showExamples(word);
   
 };
@@ -184,26 +193,26 @@ var wordPlayGame = (callback) => {
   	url = words_api + route;
   	fortyTwoWordsApi(url, (data) => {
 
-		console.log(data.word);
+		// console.log(data.word);
 
 		//logic for either to display defn, syn or ant based on random 'rand' param
-		let rand = Math.floor(Math.random() * Math.floor(3));
+		let rand = 2;
 		let mode;
 		console.log(rand);
 
 		switch(rand) {
 			case 0 : 
 				showDefinitions(data.word, 1, (res) => {
-					console.log(res);
+					// console.log(res);
 					let len = res.length;
 					rnd_index = Math.floor(Math.random() * Math.floor(len));
-					console.log(chalk.bold.cyan(`Definition: ${res[rnd_index]}`));					
+					console.log(chalk.bold.cyan(`Definition: ${res[rnd_index].text}`));					
 				});
 				break;
 
 			case 1 :
 				showSynonyms(data.word, 1, (res) => {
-					console.log(res);
+					// console.log(res);
 					len = res.length;
 					rnd_index = Math.floor(Math.random() * Math.floor(len));
 					console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
@@ -211,16 +220,16 @@ var wordPlayGame = (callback) => {
 				break;
 			case 2 :
 				showAntonyms(data.word, 1, (res) => {
-					console.log(res);
+					// console.log(res);
 
 					if(!res) {
 						showSynonyms(data.word, 1, (res) => {
-							console.log(res);
+							// console.log(res);
 							len = res.length;
 							rnd_index = Math.floor(Math.random() * Math.floor(len));
 							console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
 						});
-					} else{
+					} else {
 						len = res.length;
 						rnd_index = Math.floor(Math.random() * Math.floor(len));
 						console.log(chalk.bold.cyan(`Antonym: ${res[rnd_index]}`));	
@@ -262,9 +271,9 @@ var initDictionary = () => {
 			switch(args[0]) {
 				case "defn"    : showDefinitions(word); 
 							  	 break;
-				case "syn" 	   : showSynonyms(word, 0); 
+				case "syn" 	   : showSynonyms(word, 0, ()=>{}); 
 							  	 break;
-				case "ant" 	   : showAntonyms(word, 0); 
+				case "ant" 	   : showAntonyms(word, 0, ()=>{}); 
 							  	 break;
 				case "ex" 	   : showExamples(word); 
 						  		 break;
