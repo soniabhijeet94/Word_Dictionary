@@ -86,7 +86,7 @@ var showDefinitions = (word, flag, callback) => {
 			}
 		}
 
-		// if(flag) callback(defns);
+		if(flag) callback(defns);
 	});
 }
 
@@ -109,7 +109,7 @@ var showSynonyms = (word, flag, callback) => {
 			if(!i)
 				console.log(chalk.cyan("Sorry, API doesn't have any synonym for the given word."));
 
-			// if(flag) callback(synms);
+			if(flag) callback(synms);
 		}
 	});
 }
@@ -134,10 +134,10 @@ var showAntonyms = (word, flag, callback) => {
 			if(!i)
 				console.log(chalk.cyan("Sorry, API doesn't have any antonym for the given word."));
 
-			// if(flag) {
-			// 	if(!i) callback(i);
-			// 	callback(antms);
-			// }
+			if(flag) {
+				if(!i) callback(i);
+				callback(antms);
+			}
 		}
 	});
 }
