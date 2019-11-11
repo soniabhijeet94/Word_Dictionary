@@ -73,7 +73,7 @@ var examplesAll = (word, callback) => {
   });
 };
 
-var showDefinitions = (word, flag) => {
+var showDefinitions = (word, flag, callback) => {
 	definitionsAll(word, (res) => {
 		if(res.length >= 1){
 			let i = 1;
@@ -86,11 +86,11 @@ var showDefinitions = (word, flag) => {
 			}
 		}
 
-		if(flag) return defns;
+		// if(flag) callback(defns);
 	});
 }
 
-var showSynonyms = (word, flag) => {
+var showSynonyms = (word, flag, callback) => {
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
@@ -109,12 +109,12 @@ var showSynonyms = (word, flag) => {
 			if(!i)
 				console.log(chalk.cyan("Sorry, API doesn't have any synonym for the given word."));
 
-			if(flag) return synms;
+			// if(flag) callback(synms);
 		}
 	});
 }
 
-var showAntonyms = (word, flag) => {
+var showAntonyms = (word, flag, callback) => {
 	//using same syn_ant_all() method, as endpoints are same
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
@@ -134,7 +134,10 @@ var showAntonyms = (word, flag) => {
 			if(!i)
 				console.log(chalk.cyan("Sorry, API doesn't have any antonym for the given word."));
 
-			if(flag) return antms;
+			// if(flag) {
+			// 	if(!i) callback(i);
+			// 	callback(antms);
+			// }
 		}
 	});
 }
@@ -181,7 +184,7 @@ var wordPlayGame = (callback) => {
   	url = words_api + route;
   	fortyTwoWordsApi(url, (data) => {
 
-		console.log(data);
+		console.log(data.word);
 
 		//logic for either to display defn, syn or ant based on random 'rand' param
 		let rand = Math.floor(Math.random() * Math.floor(3));
@@ -190,21 +193,41 @@ var wordPlayGame = (callback) => {
 
 		switch(rand) {
 			case 0 : 
-				let defns = showDefinitions(data, 1);
-				let len = defns.length;
-				let rnd_index = Math.floor(Math.random() * Math.floor(len));
-				console.log(chalk.bold.cyan(`Definition: ${defns[rnd_index]}`));
+				showDefinitions(data.word, 1, (res) => {
+					console.log(res);
+					let len = res.length;
+					rnd_index = Math.floor(Math.random() * Math.floor(len));
+					console.log(chalk.bold.cyan(`Definition: ${res[rnd_index]}`));					
+				});
+				break;
 
 			case 1 :
-				let synms = showSynonyms(data, 1);
-				let len = synms.length;
-				let rnd_index = Math.floor(Math.random() * Math.floor(len));
-				console.log(chalk.bold.cyan(`Synonym: ${synms[rnd_index]}`));
+				showSynonyms(data.word, 1, (res) => {
+					console.log(res);
+					len = res.length;
+					rnd_index = Math.floor(Math.random() * Math.floor(len));
+					console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
+				});
+				break;
 			case 2 :
-				let antms = showAntonyms(data, 1);
-				let len = antms.length;
-				let rnd_index = Math.floor(Math.random() * Math.floor(len));
-				console.log(chalk.bold.cyan(`Synonym: ${antms[rnd_index]}`));
+				showAntonyms(data.word, 1, (res) => {
+					console.log(res);
+
+					if(!res) {
+						showSynonyms(data.word, 1, (res) => {
+							console.log(res);
+							len = res.length;
+							rnd_index = Math.floor(Math.random() * Math.floor(len));
+							console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
+						});
+					} else{
+						len = res.length;
+						rnd_index = Math.floor(Math.random() * Math.floor(len));
+						console.log(chalk.bold.cyan(`Antonym: ${res[rnd_index]}`));	
+					}
+				});
+				break;
+			default: console.log("invalid");
 		}
 
 		//First question is shown.. (def, syn or ant). Now the logic will be based on user's response.
@@ -227,7 +250,7 @@ var initDictionary = () => {
 			//for help & game scenarios
 			let word = args[0];
 			switch(word){
-				case 'play': wordPlayGame();
+				case 'play': wordPlayGame(() => {});
 							 break;
 				case 'help': showHelpMenu();
 							 break;
