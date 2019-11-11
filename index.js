@@ -9,6 +9,8 @@ const api_host = 'https://fourtytwowords.herokuapp.com';
 const word_api = api_host + '/word/';
 const words_api = api_host + '/words/';
 const api_key = 'b972c7ca44dda72a5b482052b1f5e13470e01477f3fb97c85d5313b3c112627073481104fec2fb1a0cc9d84c2212474c0cbe7d8e59d7b95c7cb32a1133f778abd1857bf934ba06647fda4f59e878d164';
+var hint = "";
+var word_synms = [];
 
 var showHelpMenu = () => {
   console.log('Available Commands:');
@@ -185,66 +187,155 @@ var showWordOfTheDay = (callback) => {
   	});
 }
 
+var retryGame = () => {
+  console.log(chalk.yellow('You have entered incorrect word.'));
+  console.log('Choose the options from below menu:');
+  console.log('\t1. Try Again');
+  console.log('\t2. Hint');
+  console.log('\t3. Quit');
+};
+
+var showHint = (ans, callback) => {
+
+	//logic for either to display defn, syn or ant based on random 'rand' param
+	let rand = Math.floor(Math.random() * Math.floor(3));
+	let mode;
+	let answer = ans;
+	// console.log(rand);
+
+	//we need synonyms to verify user response as well..
+	// console.log("word: " + answer);
+
+	showSynonyms(answer, 1, (res) => {
+		// console.log(res);
+		word_synms = [...res];
+		// console.log(word_synms);	
+	});
+
+	console.log('Press "Ctrl + C" to exit the program.');
+    console.log('Find the word with the following: ');
+
+	switch(rand) {
+		case 0 : 
+			showDefinitions(answer, 1, (res) => {
+				// console.log(res);
+				let len = res.length;
+				rnd_index = Math.floor(Math.random() * Math.floor(len));
+				hint = res[rnd_index].text;
+				console.log(chalk.bold.cyan(`Definition: ${res[rnd_index].text}`));					
+			});
+			break;
+
+		case 1 :
+			showSynonyms(answer, 1, (res) => {
+				// console.log(res);
+				len = res.length;
+				rnd_index = Math.floor(Math.random() * Math.floor(len));
+				hint = res[rnd_index];
+				console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
+			});
+			break;
+		case 2 :
+			showAntonyms(answer, 1, (res) => {
+				// console.log(res);
+
+				if(!res) {
+					showSynonyms(answer, 1, (res) => {
+						// console.log(res);
+						len = res.length;
+						rnd_index = Math.floor(Math.random() * Math.floor(len));
+						hint = res[rnd_index];
+						console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
+					});
+				} else {
+					len = res.length;
+					rnd_index = Math.floor(Math.random() * Math.floor(len));
+					hint = res[rnd_index];
+					console.log(chalk.bold.cyan(`Antonym: ${res[rnd_index]}`));	
+				}
+			});
+			break;
+		default: console.log("invalid");
+	}
+
+	callback(hint);
+}
+
 var wordPlayGame = (callback) => {
 	let url = '';
 
   	//Get random word from api first: {apihost}/words/randomWord?api_key={api_key} =? for Random Word
   	let route = `randomWord?api_key=${api_key}`;
   	url = words_api + route;
+  	console.log();
+  	console.log(chalk.bold.blue("********* Welcome to Word-Play! *********"))
+  	
   	fortyTwoWordsApi(url, (data) => {
 
 		// console.log(data.word);
-
-		//logic for either to display defn, syn or ant based on random 'rand' param
-		let rand = 2;
-		let mode;
-		console.log(rand);
-
-		switch(rand) {
-			case 0 : 
-				showDefinitions(data.word, 1, (res) => {
-					// console.log(res);
-					let len = res.length;
-					rnd_index = Math.floor(Math.random() * Math.floor(len));
-					console.log(chalk.bold.cyan(`Definition: ${res[rnd_index].text}`));					
-				});
-				break;
-
-			case 1 :
-				showSynonyms(data.word, 1, (res) => {
-					// console.log(res);
-					len = res.length;
-					rnd_index = Math.floor(Math.random() * Math.floor(len));
-					console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
-				});
-				break;
-			case 2 :
-				showAntonyms(data.word, 1, (res) => {
-					// console.log(res);
-
-					if(!res) {
-						showSynonyms(data.word, 1, (res) => {
-							// console.log(res);
-							len = res.length;
-							rnd_index = Math.floor(Math.random() * Math.floor(len));
-							console.log(chalk.bold.cyan(`Synonym: ${res[rnd_index]}`));					
-						});
-					} else {
-						len = res.length;
-						rnd_index = Math.floor(Math.random() * Math.floor(len));
-						console.log(chalk.bold.cyan(`Antonym: ${res[rnd_index]}`));	
-					}
-				});
-				break;
-			default: console.log("invalid");
-		}
-
+		let answer = data.word;
+		showHint(answer, (data)=>{
+			hint = data;
+		});
+		
 		//First question is shown.. (def, syn or ant). Now the logic will be based on user's response.
 		//Need to have interactive cmd now... Using readline to simulate the same..
 
-   		callback(data);
-  	});
-}
+		const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout
+        });
+
+        console.log('Type your answer and then press the ENTER key...');
+
+        rl.on('line', (user_response) => {
+          let right = false;
+
+          if(parseInt(user_response) === 3) {
+          	console.log(chalk.bold.blue('Correct Word is : ' + answer));
+			console.log(chalk.bold.yellow('Thank you for playing. Exiting now!'));
+			rl.close();
+          } else {
+	          if(hint.toLowerCase() === user_response.toLowerCase()) {
+	          	console.log(chalk.bold.yellow(`You typed the same word. Play the game genuinely.`));
+	          	rl.close();
+		        right = false;
+	          } else if(`${user_response}` === answer){
+	            console.log(chalk.bold.yellow('Congratulations! You are correct.'));
+	            rl.close();
+	          } else {
+
+		          for(let syn of word_synms) {
+		          	if(syn.toLowerCase() === user_response.toLowerCase()) {
+		          		console.log(chalk.bold.yellow(`Congratulations! You have entered correct synonym for the word '${answer}'.`));
+		          		rl.close();
+		          		right = true;
+		          	}
+		          }
+
+		          if(!right) {
+		            retryGame(); 	//Printing retry menu
+		            switch(parseInt(`${user_response}`)){
+						case 1:
+							console.log('Guess the word again : ');
+							console.log('Enter your answer :');
+							break;
+						case 2:
+							console.log('Hint:');
+							showHint(answer, (data) => {
+								hint = data;
+							})
+							console.log('\nGuess the word again using the hint provided...');
+							console.log('Enter your answer : ');
+							break;
+						default:  
+					}  
+		          }           	
+	        	}          	
+          	}
+  		});
+	});
+  }
 
 var initDictionary = () => {
 
