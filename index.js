@@ -2,6 +2,7 @@
 
 var axios = require('axios');
 var chalk = require('chalk');
+var readline = require('readline');
 
 const args = process.argv.slice(2);
 const api_host = 'https://fourtytwowords.herokuapp.com';
@@ -72,56 +73,68 @@ var examplesAll = (word, callback) => {
   });
 };
 
-var showDefinitions = (word) => {
+var showDefinitions = (word, flag) => {
 	definitionsAll(word, (res) => {
 		if(res.length >= 1){
 			let i = 1;
+			let defns = [];
 		  	console.log(chalk.yellow(`\nDefinitions of'${word}' : \n`));
 			//setting some user-readable format now
-			for(let defn of res) {
-				console.log(chalk.cyan(`${i++}. ${defn.text}`));		  
+			for(let def of res) {
+				console.log(chalk.cyan(`${i++}. ${def.text}`));	
+				defns.push(def);	  
 			}
 		}
+
+		if(flag) return defns;
 	});
 }
 
-var showSynonyms = (word) => {
+var showSynonyms = (word, flag) => {
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
+			let synms = [];
 		  	console.log(chalk.yellow(`\nSynonyms of '${word}' : \n`));
 			//setting some user-readable format now
 			for(let syn of res) {
 				if(syn.relationshipType === "synonym") {
 					for(let word of syn.words) {						
 						console.log(chalk.cyan(`${++i}. ${word}`));
+						synms.push(word);
 					}		  
 				}	  
 			}
 
 			if(!i)
 				console.log(chalk.cyan("Sorry, API doesn't have any synonym for the given word."));
+
+			if(flag) return synms;
 		}
 	});
 }
 
-var showAntonyms = (word) => {
+var showAntonyms = (word, flag) => {
 	//using same syn_ant_all() method, as endpoints are same
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
+			let antms = []
 		  	console.log(chalk.yellow(`\nAntonyms of '${word}' : \n`));
 			//setting some user-readable format now
 			for(let ant of res) {
 				if(ant.relationshipType === "antonym") {
 					for(let word of ant.words) {
 						console.log(chalk.cyan(`${++i}. ${word}`));
+						antms.push(word);
 					}		  
 				}
 			}
 
 			if(!i)
 				console.log(chalk.cyan("Sorry, API doesn't have any antonym for the given word."));
+
+			if(flag) return antms;
 		}
 	});
 }
@@ -160,6 +173,47 @@ var showWordOfTheDay = (callback) => {
   	});
 }
 
+var wordPlayGame = (callback) => {
+	let url = '';
+
+  	//Get random word from api first: {apihost}/words/randomWord?api_key={api_key} =? for Random Word
+  	let route = `randomWord?api_key=${api_key}`;
+  	url = words_api + route;
+  	fortyTwoWordsApi(url, (data) => {
+
+		console.log(data);
+
+		//logic for either to display defn, syn or ant based on random 'rand' param
+		let rand = Math.floor(Math.random() * Math.floor(3));
+		let mode;
+		console.log(rand);
+
+		switch(rand) {
+			case 0 : 
+				let defns = showDefinitions(data, 1);
+				let len = defns.length;
+				let rnd_index = Math.floor(Math.random() * Math.floor(len));
+				console.log(chalk.bold.cyan(`Definition: ${defns[rnd_index]}`));
+
+			case 1 :
+				let synms = showSynonyms(data, 1);
+				let len = synms.length;
+				let rnd_index = Math.floor(Math.random() * Math.floor(len));
+				console.log(chalk.bold.cyan(`Synonym: ${synms[rnd_index]}`));
+			case 2 :
+				let antms = showAntonyms(data, 1);
+				let len = antms.length;
+				let rnd_index = Math.floor(Math.random() * Math.floor(len));
+				console.log(chalk.bold.cyan(`Synonym: ${antms[rnd_index]}`));
+		}
+
+		//First question is shown.. (def, syn or ant). Now the logic will be based on user's response.
+		//Need to have interactive cmd now... Using readline to simulate the same..
+
+   		callback(data);
+  	});
+}
+
 var initDictionary = () => {
 
 	// console.log(process.argv);
@@ -185,9 +239,9 @@ var initDictionary = () => {
 			switch(args[0]) {
 				case "defn"    : showDefinitions(word); 
 							  	 break;
-				case "syn" 	   : showSynonyms(word); 
+				case "syn" 	   : showSynonyms(word, 0); 
 							  	 break;
-				case "ant" 	   : showAntonyms(word); 
+				case "ant" 	   : showAntonyms(word, 0); 
 							  	 break;
 				case "ex" 	   : showExamples(word); 
 						  		 break;
