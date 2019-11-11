@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 
-var axios = require('axios');
-var chalk = require('chalk');
+//importing required libs
+var axios    = require('axios');
+var chalk    = require('chalk');
 var readline = require('readline');
+var middle   = require('./middle');
+var config   = require('./config')
 
-const args = process.argv.slice(2);
-const api_host = 'https://fourtytwowords.herokuapp.com';
-const word_api = api_host + '/word/';
-const words_api = api_host + '/words/';
-const api_key = 'b972c7ca44dda72a5b482052b1f5e13470e01477f3fb97c85d5313b3c112627073481104fec2fb1a0cc9d84c2212474c0cbe7d8e59d7b95c7cb32a1133f778abd1857bf934ba06647fda4f59e878d164';
+const args      = process.argv.slice(2);
+
+//need below vars throughout the program
 var hint = "";
 var word_synms = [];
 
 var showHelpMenu = () => {
+
   console.log(chalk.bold.blue('Available Commands:'));
   console.log(chalk.bold.yellow('\t1. word-definitions : dict defn <word>'));
   console.log(chalk.bold.yellow('\t2. word-synonyms    : dict syn <word>'));		
@@ -22,61 +24,11 @@ var showHelpMenu = () => {
   console.log(chalk.bold.yellow('\t6. word-of-the-day  : dict'));
   console.log(chalk.bold.yellow('\t7. word-play game   : dict play'));
   console.log(chalk.bold.yellow('\t8. word-dict help   : dict help'));
-};
 
-
-var fortyTwoWordsApi = (url, callback) => {
-	//setup the calling to DB to fetch required results
-	// console.log("url: " + url);
-	// send a GET request
-	axios.get(url)
-	.then(response => {
-		// console.log(response.data);
-		let res = response.data;
-		// console.log(res);
-		callback(res);
-	}).catch(err => {
-		//got error
-		console.log(chalk.red("Got error: " + err + ". Please try again."));
-	});
-};
-
-
-var definitionsAll = (word, callback) => {
-  let url = '';
-
-  //{apihost}/word/{word}/definitions?api_key={api_key} =? for Word Definitions
-  let route = `${word}/definitions?api_key=${api_key}`;
-  url = word_api + route;
-  fortyTwoWordsApi(url, (data) => {
-    callback(data);
-  });
-};
-
-var syn_ant_All = (word, callback) => {
-  let url = '';
-
-  //{apihost}/word/{word}/relatedWords?api_key={api_key} => Word Synonyms
-  let route = `${word}/relatedWords?api_key=${api_key}`;
-  url = word_api + route;
-  fortyTwoWordsApi(url, (data) => {
-    callback(data);
-  });
-};
-
-var examplesAll = (word, callback) => {
-  let url = '';
-
-  //{apihost}/word/{word}/examples?api_key={api_key} =? for Word Examples
-  let route = `${word}/examples?api_key=${api_key}`;
-  url = word_api + route;
-  fortyTwoWordsApi(url, (data) => {
-    callback(data);
-  });
 };
 
 var showDefinitions = (word, flag, callback) => {
-	definitionsAll(word, (res) => {
+	middle.definitionsAll(word, (res) => {
 		if(res.length >= 1){
 			let i = 1;
 			let defns = [];
@@ -97,7 +49,7 @@ var showDefinitions = (word, flag, callback) => {
 }
 
 var showSynonyms = (word, flag, callback) => {
-	syn_ant_All(word, (res) => {
+	middle.syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
 			let synms = [];
@@ -125,7 +77,7 @@ var showSynonyms = (word, flag, callback) => {
 
 var showAntonyms = (word, flag, callback) => {
 	//using same syn_ant_all() method, as endpoints are same
-	syn_ant_All(word, (res) => {
+	middle.syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
 			let antms = [];
@@ -154,7 +106,7 @@ var showAntonyms = (word, flag, callback) => {
 }
 
 var showExamples = (word) => {
-	examplesAll(word, (res) => {
+	middle.examplesAll(word, (res) => {
 		if(res.examples.length >= 1){
 			let i = 0;
 		  	console.log(chalk.yellow(`\nExamples of '${word}' : \n`));
@@ -180,15 +132,15 @@ var showWordOfTheDay = (callback) => {
 	let url = '';
 
   	//{apihost}/words/randomWord?api_key={api_key} =? for Random Word
-  	let route = `randomWord?api_key=${api_key}`;
-  	url = words_api + route;
-  	fortyTwoWordsApi(url, (data) => {
+  	let route = `randomWord?api_key=${config.config.api_key}`;
+  	url = config.config.api_host + config.config.words_api + route;
+  	middle.fortyTwoWordsApi(url, (data) => {
    		callback(data);
   	});
 }
 
 var retryGame = () => {
-  console.log(chalk.yellow('You have entered incorrect word.'));
+  console.log(chalk.yellow('You have entered incorrect word.\n'));
   console.log('Choose the options from below menu:');
   console.log('\t1. Try Again');
   console.log('\t2. Hint');
@@ -211,9 +163,6 @@ var showHint = (ans, callback) => {
 		word_synms = [...res];
 		// console.log(word_synms);	
 	});
-
-	console.log('Press "Ctrl + C" to exit the program.');
-    console.log('Find the word with the following: ');
 
 	switch(rand) {
 		case 0 : 
@@ -265,12 +214,15 @@ var wordPlayGame = (callback) => {
 	let url = '';
 
   	//Get random word from api first: {apihost}/words/randomWord?api_key={api_key} =? for Random Word
-  	let route = `randomWord?api_key=${api_key}`;
-  	url = words_api + route;
+  	let route = `randomWord?api_key=${config.config.api_key}`;
+  	url = config.config.api_host + config.config.words_api + route;
   	console.log();
-  	console.log(chalk.bold.blue("********* Welcome to Word-Play! *********"))
+  	console.log(chalk.bold.blue("********* Welcome to Word-Play! *********\n"))
 
-  	fortyTwoWordsApi(url, (data) => {
+  	middle.fortyTwoWordsApi(url, (data) => {
+
+  		console.log('Press "Ctrl + C" to exit the program.');
+    	console.log('Find the word with the following: ');
 
 		// console.log(data.word);
 		let answer = data.word;
@@ -314,17 +266,19 @@ var wordPlayGame = (callback) => {
 		          }
 
 		          if(!right) {
-		            retryGame(); 	//Printing retry menu
+		            if(parseInt(user_response) !== 1 && parseInt(user_response) !== 2)
+		            	retryGame(); 	//Printing retry menu
+
 		            switch(parseInt(`${user_response}`)){
 						case 1:
 							console.log('Guess the word again : ');
 							console.log('Enter your answer :');
 							break;
 						case 2:
-							console.log('Hint:');
 							showHint(answer, (data) => {
 								hint = data;
 							})
+							console.log(chalk.yellow('\nHint: '));
 							console.log('\nGuess the word again using the hint provided...');
 							console.log('Enter your answer : ');
 							break;
@@ -336,6 +290,9 @@ var wordPlayGame = (callback) => {
   		});
 	});
   }
+
+
+//######################################## STARTING POINT ########################################
 
 var initDictionary = () => {
 
@@ -375,5 +332,3 @@ var initDictionary = () => {
 }
 
 initDictionary();
-
-// console.log('Type "dict help" for help.');
