@@ -9,16 +9,16 @@ const word_api = api_host + '/word/';
 const words_api = api_host + '/words/';
 const api_key = 'b972c7ca44dda72a5b482052b1f5e13470e01477f3fb97c85d5313b3c112627073481104fec2fb1a0cc9d84c2212474c0cbe7d8e59d7b95c7cb32a1133f778abd1857bf934ba06647fda4f59e878d164';
 
-var helpCommands = () => {
+var showHelpMenu = () => {
   console.log('Available Commands:');
-  console.log('\t1.dict defn <word>');
-  console.log('\t2.dict syn <word>');
-  console.log('\t3.dict ant <word>');
-  console.log('\t4.dict ex <word>');
-  console.log('\t5.dict <word>');
-  console.log('\t6.dict');
-  console.log('\t7.dict play');
-  console.log('\t8.dict help');
+  console.log('\t1. word-definitions : dict defn <word>');
+  console.log('\t2. word-synonyms    : dict syn <word>');
+  console.log('\t3. word-antonyms    : dict ant <word>');
+  console.log('\t4. word-examples    : dict ex <word>');
+  console.log('\t5. word-full-dict   : dict <word>');
+  console.log('\t6. word-of-the-day  : dict');
+  console.log('\t7. word-play game   : dict play');
+  console.log('\t8. word-dict help   : dict help');
 };
 
 
@@ -30,7 +30,7 @@ var fortyTwoWordsApi = (url, callback) => {
 	.then(response => {
 		// console.log(response.data);
 		let res = response.data;
-		// console.log(res);
+		// console.log(res.examples);
 		callback(res);
 	}).catch(err => {
 		//got error
@@ -61,11 +61,22 @@ var syn_ant_All = (word, callback) => {
   });
 };
 
+var examplesAll = (word, callback) => {
+  let url = '';
+
+  //{apihost}/word/{word}/examples?api_key={api_key} =? for Word Examples
+  let route = `${word}/examples?api_key=${api_key}`;
+  url = word_api + route;
+  fortyTwoWordsApi(url, (data) => {
+    callback(data);
+  });
+};
+
 var showDefinitions = (word) => {
 	definitionsAll(word, (res) => {
 		if(res.length >= 1){
 			let i = 1;
-		  	console.log(chalk.yellow(`\nThe definitions for the word ${word} are : \n`));
+		  	console.log(chalk.yellow(`\nThe definitions for the word '${word}' are : \n`));
 			//setting some user-readable format now
 			for(let defn of res) {
 				console.log(chalk.cyan(`${i++}. ${defn.text}`));		  
@@ -78,7 +89,7 @@ var showSynonyms = (word) => {
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
-		  	console.log(chalk.yellow(`\nThe synonyms for the word ${word} are : \n`));
+		  	console.log(chalk.yellow(`\nThe synonyms for the word '${word}' are : \n`));
 			//setting some user-readable format now
 			for(let syn of res) {
 				if(syn.relationshipType === "synonym") {
@@ -87,16 +98,19 @@ var showSynonyms = (word) => {
 					}		  
 				}	  
 			}
+
+			if(!i)
+				console.log(chalk.cyan("Sorry, API doesn't have any synonym for the given word."));
 		}
 	});
 }
 
 var showAntonyms = (word) => {
-	//using same synonymsAll method, as endpoints are same
+	//using same syn_ant_all() method, as endpoints are same
 	syn_ant_All(word, (res) => {
 		if(res.length >= 1){
 			let i = 0;
-		  	console.log(chalk.yellow(`\nThe antonyms for the word ${word} are : \n`));
+		  	console.log(chalk.yellow(`\nThe antonyms for the word '${word}' are : \n`));
 			//setting some user-readable format now
 			for(let ant of res) {
 				if(ant.relationshipType === "antonym") {
@@ -112,6 +126,20 @@ var showAntonyms = (word) => {
 	});
 }
 
+var showExamples = (word) => {
+	examplesAll(word, (res) => {
+		if(res.examples.length >= 1){
+			let i = 0;
+		  	console.log(chalk.yellow(`\nThe examples for the word '${word}' are : \n`));
+			//setting some user-readable format now
+			for(let example of res.examples) {
+				console.log(chalk.cyan(`${++i}. ${example.text}`));
+			}		  
+		}
+	});
+}
+
+
 var initDictionary = () => {
 
 	// console.log(process.argv);
@@ -120,18 +148,18 @@ var initDictionary = () => {
 	if(args.length === 2){
 		let word = args[1];
 		switch(args[0]) {
-			case "defn" : showDefinitions(word); 
-						  break;
-			case "syn" : showSynonyms(word); 
-						  break;
-			case "ant" : showAntonyms(word); 
-						  break;
+			case "defn"    : showDefinitions(word); 
+						  	 break;
+			case "syn" 	   : showSynonyms(word); 
+						  	 break;
+			case "ant" 	   : showAntonyms(word); 
+						  	 break;
+			case "ex" 	   : showExamples(word); 
+					  		 break;
+			default        : showHelpMenu();
 		}
- 	}
-
-	// if(args[2].toLowerCase() === "help")
-	// 	helpCommands();
-
+ 	} else
+ 		showHelpMenu();
 }
 
 initDictionary();
