@@ -139,26 +139,50 @@ var showExamples = (word) => {
 	});
 }
 
+var showFullDictionary = (word, callback) => {
+  //calling all APIs: defn, syn, ant & ex
+
+  showDefinitions(word);
+  showSynonyms(word);
+  showAntonyms(word);
+  showExamples(word);
+  
+};
 
 var initDictionary = () => {
 
 	// console.log(process.argv);
-
-	//For no args, call wordOfTheDay api
-	if(args.length === 2){
-		let word = args[1];
-		switch(args[0]) {
-			case "defn"    : showDefinitions(word); 
-						  	 break;
-			case "syn" 	   : showSynonyms(word); 
-						  	 break;
-			case "ant" 	   : showAntonyms(word); 
-						  	 break;
-			case "ex" 	   : showExamples(word); 
-					  		 break;
-			default        : showHelpMenu();
-		}
- 	} else
+	
+	if(args.length == 0){
+	    showWordOfTheDay((data) => {
+	      console.log('\x1b[93m Word of the Day - Dictionary: \x1b[0m');
+	      dictionary(data.word);
+	    });
+    } 	else if(args.length === 1) {
+			//for help & game scenarios
+			let word = args[0];
+			switch(word){
+				case 'play': wordPlayGame();
+							 break;
+				case 'help': showHelpMenu();
+							 break;
+				default    : console.log(chalk.blue(`\nThe full-dictionary for the word '${word}' is : \n`));
+							 showFullDictionary(word);
+			}
+	} 	else if(args.length === 2){
+			let word = args[1];
+			switch(args[0]) {
+				case "defn"    : showDefinitions(word); 
+							  	 break;
+				case "syn" 	   : showSynonyms(word); 
+							  	 break;
+				case "ant" 	   : showAntonyms(word); 
+							  	 break;
+				case "ex" 	   : showExamples(word); 
+						  		 break;
+				default        : showHelpMenu();
+			}
+ 	} 	else
  		showHelpMenu();
 }
 
