@@ -13,15 +13,15 @@ var hint = "";
 var word_synms = [];
 
 var showHelpMenu = () => {
-  console.log('Available Commands:');
-  console.log('\t1. word-definitions : dict defn <word>');
-  console.log('\t2. word-synonyms    : dict syn <word>');		
-  console.log('\t3. word-antonyms    : dict ant <word>');
-  console.log('\t4. word-examples    : dict ex <word>');
-  console.log('\t5. word-full-dict   : dict <word>');
-  console.log('\t6. word-of-the-day  : dict');
-  console.log('\t7. word-play game   : dict play');
-  console.log('\t8. word-dict help   : dict help');
+  console.log(chalk.bold.blue('Available Commands:'));
+  console.log(chalk.bold.yellow('\t1. word-definitions : dict defn <word>'));
+  console.log(chalk.bold.yellow('\t2. word-synonyms    : dict syn <word>'));		
+  console.log(chalk.bold.yellow('\t3. word-antonyms    : dict ant <word>'));
+  console.log(chalk.bold.yellow('\t4. word-examples    : dict ex <word>'));
+  console.log(chalk.bold.yellow('\t5. word-full-dict   : dict <word>'));
+  console.log(chalk.bold.yellow('\t6. word-of-the-day  : dict'));
+  console.log(chalk.bold.yellow('\t7. word-play game   : dict play'));
+  console.log(chalk.bold.yellow('\t8. word-dict help   : dict help'));
 };
 
 
@@ -269,7 +269,7 @@ var wordPlayGame = (callback) => {
   	url = words_api + route;
   	console.log();
   	console.log(chalk.bold.blue("********* Welcome to Word-Play! *********"))
-  	
+
   	fortyTwoWordsApi(url, (data) => {
 
 		// console.log(data.word);
